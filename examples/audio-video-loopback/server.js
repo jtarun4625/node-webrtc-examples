@@ -5,6 +5,7 @@ const fs = require('fs')
 
 const { RTCAudioSink, RTCVideoSink } = require('wrtc').nonstandard;
 
+const { StreamInput } = require('fluent-ffmpeg-multistream')
 
 function beforeOffer(peerConnection) {
   const audioTransceiver = peerConnection.addTransceiver('audio');
@@ -18,9 +19,11 @@ function beforeOffer(peerConnection) {
 
 
   const onAudioData = ({ samples: { buffer } }) => {
+    console.log(buffer)
     if (!stream.end) {
       stream.audio.push(Buffer.from(buffer));
     }
+    console.log(stream.audio)
   };
 
   audioSink.addEventListener('data', onAudioData);
@@ -30,7 +33,7 @@ function beforeOffer(peerConnection) {
     audioSink.removeEventListener('data', onAudioData);
   });
 
-  console.log((new StreamInput(stream.audio)).url)
+  
 
 
   return Promise.all([
