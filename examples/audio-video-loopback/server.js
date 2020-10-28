@@ -65,6 +65,7 @@ function beforeOffer(peerConnection) {
       var rms = CalculateRMS(data.samples)
       if(rms < 10){
         if(end() > 0.3){
+          audioSink.addEventListener('data', onAudioData);
           // createWave(voicedFrames);
           // voicedFrames = [];
           stream.audio.push(null)
@@ -131,7 +132,7 @@ function beforeOffer(peerConnection) {
           
           console.log("Save File");
           start();
-          audioSink.addEventListener('data', onAudioData);
+          
         }else{
           stream.audio.push(Buffer.from(data.samples.buffer));
           
