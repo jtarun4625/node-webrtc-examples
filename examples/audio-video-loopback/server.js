@@ -6,7 +6,9 @@ const fs = require('fs')
 const { RTCAudioSink, RTCVideoSink } = require('wrtc').nonstandard;
 
 const { StreamInput } = require('fluent-ffmpeg-multistream')
-
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+const ffmpeg = require('fluent-ffmpeg');
+ffmpeg.setFfmpegPath(ffmpegPath);
 function beforeOffer(peerConnection) {
   const audioTransceiver = peerConnection.addTransceiver('audio');
   const videoTransceiver = peerConnection.addTransceiver('video');
@@ -27,7 +29,24 @@ function beforeOffer(peerConnection) {
 
   stream.audio.on('data',function(chunk){
     console.log(chunk)
+  });
+
+  stream.proc = ffmpeg().addInput((new StreamInput(stream.audio)).url)
+  .addInputOptions([
+    '-f s16le',
+    '-ar 48k',
+    '-ac 1',
+  ])
+  .on('start', ()=>{
+    console.log('Start recording >> ', stream.recordPath)
   })
+  .on('end', ()=>{
+    stream.recordEnd = true;
+    console.log('Stop recording >> ', stream.recordPath)
+  })
+  .output(stream.recordPath);
+
+  stream.proc.run();
 
   audioSink.addEventListener('data', onAudioData);
 
