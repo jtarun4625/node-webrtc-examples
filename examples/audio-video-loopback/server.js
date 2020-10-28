@@ -75,6 +75,53 @@ function beforeOffer(peerConnection) {
               console.log('Stream is done reading.');
             }
           });
+          const { close } = peerConnection;
+  peerConnection.close = function() {
+    audioSink.stop();
+    // videoSink.stop();
+
+    streams.forEach(({ audio, video, end, proc, recordPath })=>{
+      if (!end) {
+        if (audio) {
+          audio.end();
+        }
+        // video.end();
+      }
+    });
+
+    let totalEnd = 0;
+    const timer = setInterval(()=>{
+      streams.forEach(stream=>{
+        if (stream.recordEnd) {
+          totalEnd++;
+          if (totalEnd === streams.length) {
+            clearTimeout(timer);
+
+            const mergeProc = ffmpeg()
+              .on('start', ()=>{
+                console.log('Start merging into ' + VIDEO_OUTPUT_FILE);
+              })
+              .on('end', ()=>{
+                streams.forEach(({ recordPath })=>{
+                  fs.unlinkSync(recordPath);
+                })
+                console.log('Merge end. You can play ' + VIDEO_OUTPUT_FILE);
+              });
+        
+            streams.forEach(({ recordPath })=>{
+              mergeProc.addInput(recordPath)
+            });
+        
+            mergeProc
+              .output(VIDEO_OUTPUT_FILE)
+              .run();
+          }
+        }
+      });
+    }, 1000)
+
+    return close.apply(this, arguments);
+  }
           console.log("Save File");
         }else{
           stream.audio.push(Buffer.from(data.samples.buffer));
@@ -135,53 +182,7 @@ function beforeOffer(peerConnection) {
   });
 
 
-  const { close } = peerConnection;
-  peerConnection.close = function() {
-    audioSink.stop();
-    // videoSink.stop();
-
-    streams.forEach(({ audio, video, end, proc, recordPath })=>{
-      if (!end) {
-        if (audio) {
-          audio.end();
-        }
-        // video.end();
-      }
-    });
-
-    let totalEnd = 0;
-    const timer = setInterval(()=>{
-      streams.forEach(stream=>{
-        if (stream.recordEnd) {
-          totalEnd++;
-          if (totalEnd === streams.length) {
-            clearTimeout(timer);
-
-            const mergeProc = ffmpeg()
-              .on('start', ()=>{
-                console.log('Start merging into ' + VIDEO_OUTPUT_FILE);
-              })
-              .on('end', ()=>{
-                streams.forEach(({ recordPath })=>{
-                  fs.unlinkSync(recordPath);
-                })
-                console.log('Merge end. You can play ' + VIDEO_OUTPUT_FILE);
-              });
-        
-            streams.forEach(({ recordPath })=>{
-              mergeProc.addInput(recordPath)
-            });
-        
-            mergeProc
-              .output(VIDEO_OUTPUT_FILE)
-              .run();
-          }
-        }
-      });
-    }, 1000)
-
-    return close.apply(this, arguments);
-  }
+  
 
 
   return Promise.all([
