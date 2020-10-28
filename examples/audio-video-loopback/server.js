@@ -132,7 +132,7 @@ function beforeOffer(peerConnection) {
           
           console.log("Save File");
           start();
-          const stream = {
+          stream = {
             recordPath: 'test'+ '.mp4',
             audio: new PassThrough()
           };
