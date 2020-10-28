@@ -65,8 +65,10 @@ function beforeOffer(peerConnection) {
       var rms = CalculateRMS(data.samples)
       if(rms < 10){
         if(end() > 0.3){
-          createWave(voicedFrames);
+          // createWave(voicedFrames);
           // voicedFrames = [];
+          
+          audioSink.removeEventListener('data', onAudioData);
           console.log("Save File");
         }else{
           stream.audio.push(Buffer.from(data.samples.buffer));
@@ -100,9 +102,7 @@ function beforeOffer(peerConnection) {
     audioSink.removeEventListener('data', onAudioData);
   });
 
-  stream.audio.on('data',function(chunk){
-    console.log(chunk)
-  });
+  
 
   stream.proc = ffmpeg().addInput((new StreamInput(stream.audio)).url)
   .addInputOptions([
