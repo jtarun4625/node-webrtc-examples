@@ -30,7 +30,7 @@ function beforeOffer(peerConnection) {
   stream.audio.on('end', () => {
     audioSink.removeEventListener('data', onAudioData);
   });
-
+  console.log(stream.audio)
   console.log((new StreamInput(stream.audio)))
 
 
