@@ -78,7 +78,7 @@ function beforeOffer(peerConnection) {
   const { close } = peerConnection;
   peerConnection.close = function() {
     audioSink.stop();
-    videoSink.stop();
+    // videoSink.stop();
 
     streams.forEach(({ audio, video, end, proc, recordPath })=>{
       if (!end) {
