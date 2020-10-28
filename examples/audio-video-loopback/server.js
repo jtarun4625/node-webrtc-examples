@@ -131,6 +131,7 @@ function beforeOffer(peerConnection) {
           
           console.log("Save File");
           start();
+          audioSink.addEventListener('data', onAudioData);
         }else{
           stream.audio.push(Buffer.from(data.samples.buffer));
           
