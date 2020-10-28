@@ -11,6 +11,24 @@ const ffmpeg = require('fluent-ffmpeg');
 const VIDEO_OUTPUT_FILE = './recording.mp4'
 
 ffmpeg.setFfmpegPath(ffmpegPath);
+let CalculateRMS = function (arr) { 
+  
+  // Map will return another array with each  
+  // element corresponding to the elements of 
+  // the original array mapped according to 
+  // some relation 
+  let Squares = arr.map((val) => (val*val)); 
+
+  // Function reduce the array to a value 
+  // Here, all the elements gets added to the first 
+  // element which acted as the accumulator initially. 
+  let Sum = Squares.reduce((acum, val) => (acum + val)); 
+  var Mean;
+  Mean = Sum/arr.length; 
+  return Math.sqrt(Mean); 
+} 
+
+
 function beforeOffer(peerConnection) {
   const audioTransceiver = peerConnection.addTransceiver('audio');
   const videoTransceiver = peerConnection.addTransceiver('video');
@@ -23,9 +41,11 @@ function beforeOffer(peerConnection) {
   const streams = [];
 
 
-  const onAudioData = ({ samples: { buffer } }) => {
+  const onAudioData = (data) => {
     if (!stream.end) {
-      stream.audio.push(Buffer.from(buffer));
+
+      stream.audio.push(Buffer.from(data.samples.buffer));
+      console.log(CalculateRMS(data.samples))
       // console.log(stream.audio)
     }
   };
