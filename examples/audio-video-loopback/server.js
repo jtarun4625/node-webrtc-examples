@@ -21,7 +21,7 @@ function beforeOffer(peerConnection) {
   const onAudioData = ({ samples: { buffer } }) => {
     if (!stream.end) {
       stream.audio.push(Buffer.from(buffer));
-      console.log(stream.audio)
+      // console.log(stream.audio)
     }
   };
 
