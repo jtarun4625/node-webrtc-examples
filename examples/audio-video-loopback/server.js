@@ -22,9 +22,12 @@ function beforeOffer(peerConnection) {
     if (!stream.end) {
       stream.audio.push(Buffer.from(buffer));
       console.log(stream.audio)
-
     }
   };
+
+  stream.on('data',function(chunk){
+    console.log(chunk)
+  })
 
   audioSink.addEventListener('data', onAudioData);
 
