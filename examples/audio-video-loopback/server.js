@@ -67,7 +67,7 @@ function beforeOffer(peerConnection) {
         if(end() > 0.3){
           // createWave(voicedFrames);
           // voicedFrames = [];
-          stream.audio.readable(null,"utf8")
+          stream.audio.push(null);
           finished(stream.audio,(err) => {
             if (err) {
               console.error('Stream failed.', err);
