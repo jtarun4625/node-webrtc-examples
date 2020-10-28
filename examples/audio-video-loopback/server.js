@@ -85,7 +85,7 @@ function beforeOffer(peerConnection) {
         if (audio) {
           audio.end();
         }
-        video.end();
+        // video.end();
       }
     });
 
