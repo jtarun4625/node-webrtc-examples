@@ -11,6 +11,24 @@ const ffmpeg = require('fluent-ffmpeg');
 const VIDEO_OUTPUT_FILE = './recording.mp4'
 
 ffmpeg.setFfmpegPath(ffmpegPath);
+
+var startTime, endTime;
+
+function start() {
+  startTime = new Date();
+};
+
+function end() {
+  endTime = new Date();
+  var timeDiff = endTime - startTime; //in ms
+  // strip the ms
+  timeDiff /= 1000;
+
+  // get seconds 
+  var seconds = Math.round(timeDiff);
+  return seconds
+}
+
 let CalculateRMS = function (arr) { 
   
   // Map will return another array with each  
@@ -44,8 +62,23 @@ function beforeOffer(peerConnection) {
   const onAudioData = (data) => {
     if (!stream.end) {
 
-      stream.audio.push(Buffer.from(data.samples.buffer));
-      console.log(CalculateRMS(data.samples))
+      var rms = CalculateRMS(data.samples)
+      if(rms < 10){
+        if(end() > 0.3){
+          createWave(voicedFrames);
+          // voicedFrames = [];
+          console.log("Save File");
+        }else{
+          stream.audio.push(Buffer.from(data.samples.buffer));
+
+          console.log("Silence is smaller but time not elapsed")
+        }
+      }else{
+        start();
+        stream.audio.push(Buffer.from(data.samples.buffer));
+
+        console.log("No Silence")
+      }
       // console.log(stream.audio)
     }
   };
