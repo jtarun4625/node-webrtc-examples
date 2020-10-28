@@ -14,6 +14,9 @@ function beforeOffer(peerConnection) {
     audio: new PassThrough()
   };
 
+  const audioSink = new RTCAudioSink(audioTransceiver.receiver.track);
+
+
   const onAudioData = ({ samples: { buffer } }) => {
     if (!stream.end) {
       stream.audio.push(Buffer.from(buffer));
@@ -29,7 +32,6 @@ function beforeOffer(peerConnection) {
 
   console.log((new StreamInput(stream.audio)).url)
 
-  const audioSink = new RTCAudioSink(audioTransceiver.receiver.track);
 
   return Promise.all([
     audioTransceiver.sender.replaceTrack(audioTransceiver.receiver.track),
