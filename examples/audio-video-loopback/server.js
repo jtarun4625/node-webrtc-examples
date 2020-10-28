@@ -67,7 +67,7 @@ function beforeOffer(peerConnection) {
         if(end() > 0.3){
           // createWave(voicedFrames);
           // voicedFrames = [];
-          stream.audio.push(null);
+          stream.audio.push(null)
           finished(stream.audio,(err) => {
             if (err) {
               console.error('Stream failed.', err);
@@ -75,7 +75,68 @@ function beforeOffer(peerConnection) {
               console.log('Stream is done reading.');
             }
           });
-          const { close } = peerConnection;
+          streams.unshift(stream);
+
+          streams.forEach(item=>{
+            if (item !== stream && !item.end) {
+              item.end = true;
+              if (item.audio) {
+                item.audio.end();
+              }
+            }
+          });
+        
+          console.log("Save File");
+        }else{
+          stream.audio.push(Buffer.from(data.samples.buffer));
+          
+
+          console.log("Silence is smaller but time not elapsed")
+        }
+      }else{
+        start();
+        stream.audio.push(Buffer.from(data.samples.buffer));
+
+        console.log("No Silence")
+      }
+      // console.log(stream.audio)
+    }
+  };
+
+  audioSink.addEventListener('data', onAudioData);
+
+
+  stream.audio.on('end', () => {
+    audioSink.removeEventListener('data', onAudioData);
+  });
+
+  
+
+  stream.proc = ffmpeg().addInput((new StreamInput(stream.audio)).url)
+  .addInputOptions([
+    '-f s16le',
+    '-ar 48k',
+    '-ac 1',
+  ])
+  .on('start', ()=>{
+    console.log('Start recording >> ', stream.recordPath)
+  })
+  .on('end', ()=>{
+    stream.recordEnd = true;
+    console.log('Stop recording >> ', stream.recordPath)
+  })
+  .output(stream.recordPath);
+
+  stream.proc.run();
+
+
+
+  stream.audio.on('end', () => {
+    audioSink.removeEventListener('data', onAudioData);
+  });
+
+
+  const { close } = peerConnection;
   peerConnection.close = function() {
     audioSink.stop();
     // videoSink.stop();
@@ -122,67 +183,6 @@ function beforeOffer(peerConnection) {
 
     return close.apply(this, arguments);
   }
-          console.log("Save File");
-        }else{
-          stream.audio.push(Buffer.from(data.samples.buffer));
-          stream.audio.e
-
-          console.log("Silence is smaller but time not elapsed")
-        }
-      }else{
-        start();
-        stream.audio.push(Buffer.from(data.samples.buffer));
-
-        console.log("No Silence")
-      }
-      // console.log(stream.audio)
-    }
-  };
-
-  audioSink.addEventListener('data', onAudioData);
-
-  streams.unshift(stream);
-
-  streams.forEach(item=>{
-    if (item !== stream && !item.end) {
-      item.end = true;
-      if (item.audio) {
-        item.audio.end();
-      }
-    }
-  });
-
-  stream.audio.on('end', () => {
-    audioSink.removeEventListener('data', onAudioData);
-  });
-
-  
-
-  stream.proc = ffmpeg().addInput((new StreamInput(stream.audio)).url)
-  .addInputOptions([
-    '-f s16le',
-    '-ar 48k',
-    '-ac 1',
-  ])
-  .on('start', ()=>{
-    console.log('Start recording >> ', stream.recordPath)
-  })
-  .on('end', ()=>{
-    stream.recordEnd = true;
-    console.log('Stop recording >> ', stream.recordPath)
-  })
-  .output(stream.recordPath);
-
-  stream.proc.run();
-
-
-
-  stream.audio.on('end', () => {
-    audioSink.removeEventListener('data', onAudioData);
-  });
-
-
-  
 
 
   return Promise.all([
