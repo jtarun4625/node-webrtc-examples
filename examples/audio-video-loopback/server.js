@@ -25,7 +25,7 @@ function beforeOffer(peerConnection) {
     }
   };
 
-  stream.on('data',function(chunk){
+  stream.audio.on('data',function(chunk){
     console.log(chunk)
   })
 
