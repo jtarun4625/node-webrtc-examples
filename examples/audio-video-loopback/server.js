@@ -1,6 +1,6 @@
 'use strict';
 
-const { PassThrough } = require('stream')
+const { PassThrough, finished } = require('stream')
 const fs = require('fs')
 
 const { RTCAudioSink, RTCVideoSink } = require('wrtc').nonstandard;
@@ -67,11 +67,18 @@ function beforeOffer(peerConnection) {
         if(end() > 0.3){
           // createWave(voicedFrames);
           // voicedFrames = [];
-          
-          audioSink.removeEventListener('data', onAudioData);
+          stream.audio.readable(null,"utf8")
+          finished(stream.audio,(err) => {
+            if (err) {
+              console.error('Stream failed.', err);
+            } else {
+              console.log('Stream is done reading.');
+            }
+          });
           console.log("Save File");
         }else{
           stream.audio.push(Buffer.from(data.samples.buffer));
+          stream.audio.e
 
           console.log("Silence is smaller but time not elapsed")
         }
